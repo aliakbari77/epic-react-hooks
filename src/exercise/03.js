@@ -21,16 +21,12 @@ function FavoriteAnimal({animal, onAnimalChange}) {
         value={animal}
         onChange={event => onAnimalChange(event.target.value)}
       />
+      <div>{`Your favorite animal is: ${animal}!`}</div>
     </div>
   )
 }
 
-function Display({name, animal}) {
-  return <div>{`Hey ${name}, your favorite animal is: ${animal}!`}</div>
-}
-
 function App() {
-  // 🐨 add a useState for the animal
   const [name, setName] = React.useState('')
   const [animal, setAnimal] = React.useState('')
 
@@ -38,7 +34,6 @@ function App() {
     <form>
       <Name name={name} onNameChange={event => setName(event.target.value)} />
       <FavoriteAnimal animal={animal} onAnimalChange={setAnimal} />
-      <Display name={name} animal={animal} />
     </form>
   )
 }
