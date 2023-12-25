@@ -10,7 +10,7 @@ function Board({serialize = JSON.stringify, deserialize = JSON.parse} = {}) {
     return Array(9).fill(null)
   })
 
-  const [nextValue, setNextValue] = React.useState('X')
+  const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
   const [winner, setWinner] = React.useState(null)
   const [status, setStatus] = React.useState(
     calculateStatus(winner, squares, nextValue),
@@ -84,7 +84,7 @@ function Game() {
 
 // eslint-disable-next-line no-unused-vars
 function calculateStatus(winner, squares, nextValue) {
-  console.log("here 3", squares)
+  console.log('here 3', squares)
   return winner
     ? `Winner: ${winner}`
     : squares.every(Boolean)
