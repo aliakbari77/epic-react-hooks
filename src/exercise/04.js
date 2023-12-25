@@ -3,23 +3,45 @@
 
 import * as React from 'react'
 
-function Board({serialize = JSON.stringify, deserialize = JSON.parse} = {}) {
-  const [squares, setSquares] = React.useState(() => {
-    const getSquares = window.localStorage.getItem('squares')
-    if (getSquares) return deserialize(getSquares)
-    return Array(9).fill(null)
+function useLocalStorageState(
+  key,
+  defalutValue = '',
+  {serialize = JSON.stringify, deserialize = JSON.parse} = {},
+) {
+  const [state, setState] = React.useState(() => {
+    const valueInLocalStorage = window.localStorage.getItem(key)
+    if (valueInLocalStorage) {
+      return deserialize(valueInLocalStorage)
+    }
+    return typeof defalutValue === 'function' ? defalutValue() : defalutValue
   })
 
+  const prevKeyRef = React.useRef(key)
+
+  React.useEffect(() => {
+    const prevKey = prevKeyRef.current
+    if (prevKey !== key) {
+      window.localStorage.removeItem(prevKey)
+    }
+    prevKeyRef.current = key
+    window.localStorage.setItem(key, serialize(state))
+  }, [key, state, serialize])
+
+  return [state, setState]
+}
+
+function Board() {
+  const [squares, setSquares] = useLocalStorageState('squares', Array(9).fill(null))
+
   const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
-  const [winner, setWinner] = React.useState(null)
+  const [winner, setWinner] = React.useState(calculateWinner(squares))
   const [status, setStatus] = React.useState(
     calculateStatus(winner, squares, nextValue),
   )
 
   React.useEffect(() => {
-    window.localStorage.setItem('squares', serialize(squares))
     setStatus(calculateStatus(winner, squares, nextValue))
-  }, [winner, squares, nextValue])
+  }, [winner, squares, nextValue, status])
 
   function selectSquare(square) {
     if (squares[square] || winner) return
