@@ -30,40 +30,10 @@ function useLocalStorageState(
   return [state, setState]
 }
 
-function Board() {
-  const [squares, setSquares] = useLocalStorageState('squares', Array(9).fill(null))
-
-  const [nextValue, setNextValue] = React.useState(calculateNextValue(squares))
-  const [winner, setWinner] = React.useState(calculateWinner(squares))
-  const [status, setStatus] = React.useState(
-    calculateStatus(winner, squares, nextValue),
-  )
-
-  React.useEffect(() => {
-    setStatus(calculateStatus(winner, squares, nextValue))
-  }, [winner, squares, nextValue, status])
-
-  function selectSquare(square) {
-    if (squares[square] || winner) return
-
-    const squareCopy = [...squares]
-    squareCopy[square] = nextValue
-
-    setSquares(squareCopy)
-    setNextValue(calculateNextValue(squareCopy))
-    setWinner(calculateWinner(squareCopy))
-  }
-
-  function restart() {
-    setSquares(Array(9).fill(null))
-    setNextValue('X')
-    setWinner(null)
-    setStatus(calculateStatus(winner, squares, nextValue))
-  }
-
+function Board({onClick, squares}) {
   function renderSquare(i) {
     return (
-      <button className="square" onClick={() => selectSquare(i)}>
+      <button className="square" onClick={() => onClick(i)}>
         {squares[i]}
       </button>
     )
@@ -71,7 +41,6 @@ function Board() {
 
   return (
     <div>
-      <div className="status">{`${status}`}</div>
       <div className="board-row">
         {renderSquare(0)}
         {renderSquare(1)}
@@ -87,26 +56,63 @@ function Board() {
         {renderSquare(7)}
         {renderSquare(8)}
       </div>
-      <button className="restart" onClick={restart}>
-        restart
-      </button>
     </div>
   )
 }
 
 function Game() {
+  const [currentSquares, setCurrentSquares] = useLocalStorageState(
+    'squares',
+    Array(9).fill(null),
+  )
+
+  const [nextValue, setNextValue] = React.useState(
+    calculateNextValue(currentSquares),
+  )
+  const [winner, setWinner] = React.useState(calculateWinner(currentSquares))
+  const [status, setStatus] = React.useState(
+    calculateStatus(winner, currentSquares, nextValue),
+  )
+
+  React.useEffect(() => {
+    setStatus(calculateStatus(winner, currentSquares, nextValue))
+  }, [winner, currentSquares, nextValue, status, setCurrentSquares])
+
+  function selectSquare(square) {
+    if (currentSquares[square] || winner) return
+
+    const squareCopy = [...currentSquares]
+    squareCopy[square] = nextValue
+
+    setCurrentSquares(squareCopy)
+    console.log('here 5', squareCopy)
+    setNextValue(calculateNextValue(squareCopy))
+    setWinner(calculateWinner(squareCopy))
+  }
+
+  function restart() {
+    setCurrentSquares(Array(9).fill(null))
+    setNextValue('X')
+    setWinner(null)
+    setStatus(calculateStatus(winner, currentSquares, nextValue))
+  }
+
   return (
     <div className="game">
       <div className="game-board">
-        <Board />
+        <Board squares={currentSquares} onClick={selectSquare} />
+        <button className="restart" onClick={restart}>
+          restart
+        </button>
       </div>
+      <div className="game-info">{status}</div>
+      <ol>{}</ol>
     </div>
   )
 }
 
 // eslint-disable-next-line no-unused-vars
 function calculateStatus(winner, squares, nextValue) {
-  console.log('here 3', squares)
   return winner
     ? `Winner: ${winner}`
     : squares.every(Boolean)
@@ -116,6 +122,7 @@ function calculateStatus(winner, squares, nextValue) {
 
 // eslint-disable-next-line no-unused-vars
 function calculateNextValue(squares) {
+  console.log('here 4', squares)
   return squares.filter(Boolean).length % 2 === 0 ? 'X' : 'O'
 }
 
