@@ -65,6 +65,9 @@ function Game() {
     'squares',
     Array(9).fill(null),
   )
+  const [history, setHistory] = useLocalStorageState('history', [
+    currentSquares,
+  ])
 
   const [nextValue, setNextValue] = React.useState(
     calculateNextValue(currentSquares),
@@ -85,9 +88,12 @@ function Game() {
     squareCopy[square] = nextValue
 
     setCurrentSquares(squareCopy)
-    console.log('here 5', squareCopy)
     setNextValue(calculateNextValue(squareCopy))
     setWinner(calculateWinner(squareCopy))
+
+    console.log(history.filter(h => h === squareCopy))
+
+    setHistory(p => [...p, squareCopy])
   }
 
   function restart() {
@@ -95,6 +101,13 @@ function Game() {
     setNextValue('X')
     setWinner(null)
     setStatus(calculateStatus(winner, currentSquares, nextValue))
+    setHistory([])
+  }
+
+  const handleGameInfo = index => {
+    setCurrentSquares(history[index])
+    setNextValue(calculateNextValue(history[index]))
+    setStatus(calculateStatus(winner, history[index], nextValue))
   }
 
   return (
@@ -105,8 +118,18 @@ function Game() {
           restart
         </button>
       </div>
-      <div className="game-info">{status}</div>
-      <ol>{}</ol>
+      <div className="game-info">
+        {status}
+        <ol>
+          {history.map((h, index) => (
+            <li key={index}>
+              <button onClick={() => handleGameInfo(index)}>
+                {index === 0 ? 'Go to game start' : `Go to move #${index}`}{' '}
+              </button>
+            </li>
+          ))}
+        </ol>
+      </div>
     </div>
   )
 }
@@ -122,7 +145,6 @@ function calculateStatus(winner, squares, nextValue) {
 
 // eslint-disable-next-line no-unused-vars
 function calculateNextValue(squares) {
-  console.log('here 4', squares)
   return squares.filter(Boolean).length % 2 === 0 ? 'X' : 'O'
 }
 
