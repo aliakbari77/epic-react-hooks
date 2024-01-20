@@ -35,12 +35,13 @@ function Board({onClick, squares}) {
 }
 
 function Game() {
-  React.useEffect(() => {
-    window.localStorage.setItem('squares', JSON.stringify(squares))
-  }, [squares])
-
-  const [currentStep, setCurrentStep] = React.useState(0)
-  const [history, setHistory] = React.useState([Array(9).fill(null)])
+  const [currentStep, setCurrentStep] = useLocalStorageState(
+    'tic-tac-toe:step',
+    0,
+  )
+  const [history, setHistory] = useLocalStorageState('tic-tac-toe:history', [
+    Array(9).fill(null),
+  ])
 
   const currentSquares = history[currentStep]
   const nextValue = calculateNextValue(currentSquares)
@@ -51,13 +52,16 @@ function Game() {
     if (winner || currentSquares[square]) {
       return
     }
+    const newHistory = history.slice(0, currentStep + 1)
     const squaresCopy = [...currentSquares]
     squaresCopy[square] = nextValue
-    setSquares(squaresCopy)
+    setHistory([...newHistory, squaresCopy])
+    setCurrentStep(newHistory.length)
   }
 
   function restart() {
-    setSquares(Array(9).fill(null))
+    setHistory([Array(9).fill(null)])
+    setCurrentStep(0)
   }
 
   const moves = history.map((stepSquares, step) => {
@@ -75,7 +79,7 @@ function Game() {
   return (
     <div className="game">
       <div className="game-board">
-        <Board onClick={selectSquare} squares={squares} />
+        <Board onClick={selectSquare} squares={currentSquares} />
         <button className="restart" onClick={restart}>
           restart
         </button>
