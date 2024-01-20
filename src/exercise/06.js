@@ -16,9 +16,10 @@ import {
 function PokemonInfo({pokemonName}) {
   // 🐨 Have state for the pokemon (null)
   const [pokemon, setPokemon] = React.useState(null)
+  const [error, setError] = React.useState(null)
 
   React.useEffect(() => {
-    console.log("rerendering...")
+    console.log('rerendering...')
     if (!pokemonName) return
     setPokemon(null)
     fetchPokemon(pokemonName)
@@ -26,13 +27,15 @@ function PokemonInfo({pokemonName}) {
         console.log(data)
         setPokemon(data)
       })
-      .catch(err => console.log(err))
+      .catch(err => setError(err.message))
   }, [pokemonName])
-  
+
   return (
     <>
+      {error && <div><p>There was an error: </p>{error}</div>}
       {!pokemonName && 'Submit a pokemon'}
-      {pokemonName &&
+      {!error &&
+        pokemonName &&
         (pokemon ? (
           <PokemonDataView pokemon={pokemon} />
         ) : (
