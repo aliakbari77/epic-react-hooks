@@ -9,6 +9,27 @@ import {
   PokemonInfoFallback,
 } from '../pokemon'
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    console.log("hello")
+    super(props)
+    this.state = {hasError: false}
+  }
+
+  componentDidCatch(error, info) {
+    this.setState({hasError: true})
+    console.log(error, info)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback
+    }
+
+    return this.props.children
+  }
+}
+
 function PokemonInfo({pokemonName}) {
   const [error, setError] = React.useState(null)
   const [state, setState] = React.useState({pokemon: null, status: 'idle'})
@@ -25,6 +46,7 @@ function PokemonInfo({pokemonName}) {
       .catch(err => {
         setError(err.message)
         setState({pokemon: null, status: 'rejected'})
+        throw new Error('new error')
       })
   }, [pokemonName])
 
@@ -60,7 +82,9 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <PokemonInfo pokemonName={pokemonName} />
+        <ErrorBoundary fallback={<p>Something went wrong ...</p>}>
+          <PokemonInfo pokemonName={pokemonName} />
+        </ErrorBoundary>
       </div>
     </div>
   )
